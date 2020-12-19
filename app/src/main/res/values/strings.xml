@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">CustomMusicPlayer</string>
+
+    <string name="ticker_text">What</string>
+</resources>

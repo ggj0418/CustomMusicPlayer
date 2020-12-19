@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.custommusicplayer">
+
+    <application
+        android:name=".Audio.AudioApplication"
+        android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:largeHeap="true"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.CustomMusicPlayer">
+        <activity
+            android:name=".PlayMusicActivity"
+            android:launchMode="singleTop"/>
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".Audio.AudioService"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="REWIND"/>
+                <action android:name="TOGGLE_PLAY"/>
+                <action android:name="FORWARD"/>
+                <action android:name="CLOSE"/>
+            </intent-filter>
+        </service>
+
+    </application>
+
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+</manifest>
+
+<!-- hardwareAccelerated와 largeHeap은 노래 목록에서 앨범 아트를 디스크에 저장해서 스크롤 시, 버벅거림을 해소하기 위한 요소 -->

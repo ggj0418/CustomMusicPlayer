@@ -53,7 +53,7 @@ public class PlayMusicActivity extends AppCompatActivity implements View.OnClick
 
     private ArrayList<MusicData> musicDataArrayList;
     private int position;
-    boolean isPlaying = true, isFirstExecuted = true;
+    boolean isPlaying = true, isFirstExecuted = true, isMusicChanged = false;
 
     private TextView title, currentDuration, maxDuration;
     private ImageView album, previous, next, play;
@@ -169,12 +169,17 @@ public class PlayMusicActivity extends AppCompatActivity implements View.OnClick
 
     // 새로운 노래가 시작될 때에 화면에 해당 노래의 정보를 출력해주는 함수
     private void updateUI() {
+        Log.i("@@@@@@@@@@@ isFirst ", (isFirstExecuted) ? "true" : "false");
+        Log.i("@@@@@@@@@@@ isChange", (isMusicChanged) ? "true" : "false");
         if (audioServiceInterface.isPlaying()) {
             play.setImageResource(R.drawable.ic_pause_music);
         } else {
             if (isFirstExecuted) {
                 play.setImageResource(R.drawable.ic_pause_music);
                 isFirstExecuted = false;
+            } else if (isMusicChanged) {
+                play.setImageResource(R.drawable.ic_pause_music);
+                isMusicChanged = false;
             } else {
                 play.setImageResource(R.drawable.ic_play_music2);
             }
@@ -202,6 +207,9 @@ public class PlayMusicActivity extends AppCompatActivity implements View.OnClick
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if(intent.getAction().equals(BroadCastActions.CHANGE_MUSIC)) {
+                isMusicChanged = true;
+            }
             updateUI();
         }
     };
@@ -210,6 +218,7 @@ public class PlayMusicActivity extends AppCompatActivity implements View.OnClick
     public void registerBroadcast() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BroadCastActions.PLAY_STATE_CHANGED);
+        filter.addAction(BroadCastActions.CHANGE_MUSIC);
         registerReceiver(broadcastReceiver, filter);
     }
 

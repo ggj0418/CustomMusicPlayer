@@ -24,6 +24,7 @@ import android.widget.RemoteViews;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.custommusicplayer.Audio.AudioService;
 import com.example.custommusicplayer.DAO.CommandActions;
 import com.example.custommusicplayer.PlayMusicActivity;
@@ -169,12 +170,6 @@ public class NotificationPlayer {
 
         // AudioService의 MediaPlayer에서 현재 진행되고 있는 노래의 변화를 인식하고 업데이트하는 함수입니다
         private void updateRemoteView(RemoteViews remoteViews, Notification notification) {
-            if (mService.isPlaying()) {
-                remoteViews.setImageViewResource(R.id.btn_play_pause, R.drawable.ic_pause_music);
-            } else {
-                remoteViews.setImageViewResource(R.id.btn_play_pause, R.drawable.ic_play_music2);
-            }
-
             String title = mService.getAudioItem().getTitle();
             remoteViews.setTextViewText(R.id.txt_title, title);
             Uri albumArtUri = ContentUris.withAppendedId(Uri.parse("content://media/external/audio/albumart"), mService.getAudioItem().getAlbumId());
@@ -184,13 +179,21 @@ public class NotificationPlayer {
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
+                    Log.i("&&&&&&&&&&&& mService.isPlaying ", (mService.isPlaying()) ? "true" : "false");
                     Picasso
                             .with(mService)
                             .load(albumArtUri)
                             .error(R.drawable.ic_default_music)
                             .into(remoteViews, R.id.img_albumart, NOTIFICATION_PLAYER_ID, notification);
+
+                    if (mService.isPlaying()) {
+                        remoteViews.setImageViewResource(R.id.btn_play_pause, R.drawable.ic_pause_music);
+                    } else {
+                        remoteViews.setImageViewResource(R.id.btn_play_pause, R.drawable.ic_play_music2);
+                    }
                 }
             });
+
 
         }
 

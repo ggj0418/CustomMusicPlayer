@@ -34,6 +34,7 @@ import com.example.custommusicplayer.Adapter.MusicAdapter;
 import com.example.custommusicplayer.DAO.MusicData;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -48,13 +49,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int LOADER_ID = 1001;
     private static final int P_CODE = 1002;
     private static final String TAG = "############";
+    private boolean isFirstExecuted = true;
 
     private ArrayList<MusicData> musicDataArrayList = new ArrayList<>();
     private ListView musicListView;
     private MusicAdapter musicAdapter;
-    private SwipeRefreshLayout swipeRefreshLayout;
 
     private Disposable disposable;
+    private MediaScannerConnection mScannerConnection;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,29 +77,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 밑으로 스와이프 시, 새로 다운로드 된 오디오 파일을 불러오는 함수 실행
-        swipeRefreshLayout = findViewById(R.id.mainactivity_swipe_refreshlayout);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // 새로 다운로드 된 오디오 파일을 불러오는 함수
-                refreshLoader();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Stop animation (This will be after 3 seconds)
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-                }, 2500);
-            }
-        });
-        // 스와이프에서 돌아가는 동그라미의 색깔 선언
-        swipeRefreshLayout.setColorSchemeColors(
-                getResources().getColor(android.R.color.holo_blue_bright),
-                getResources().getColor(android.R.color.holo_green_light),
-                getResources().getColor(android.R.color.holo_orange_light),
-                getResources().getColor(android.R.color.holo_red_light)
-        );
+//        mScannerConnection = new MediaScannerConnection(this, mScanClient);
 
         // OS가 Marshmallow 이상일 경우 권한체크를 해야 합니다.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -115,6 +95,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        if(isFirstExecuted) {
+            isFirstExecuted = false;
+        } else {
+            refreshLoader();
+        }
+    }
+
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == P_CODE) {
@@ -124,6 +114,32 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+//    private MediaScannerConnection.MediaScannerConnectionClient mScanClient = new MediaScannerConnection.MediaScannerConnectionClient() {
+//        @Override
+//        public void onMediaScannerConnected() {
+//            File file = Environment.getExternalStorageDirectory();
+//
+//            File[] fileNames = file.listFiles(new FilenameFilter(){               // 특정 확장자만 가진 파일들을 필터링함
+//                public boolean accept(File dir, String name){
+//
+//                    return name.endsWith(".mp3");
+//                }
+//            });
+//
+//            if (fileNames != null) {
+//                for (int i = 0; i < fileNames.length ; i++)          //  파일 갯수 만큼   scanFile을 호출함
+//                {
+//                    mScannerConnection.scanFile(fileNames[i].getAbsolutePath(), null);
+//                }
+//            }
+//        }
+//
+//        @Override
+//        public void onScanCompleted(String path, Uri uri) {           // 정확하게 모든 파일들에 대한 스캔이 끝난 타이밍에 대한 추가 소스가 필요
+//            refreshLoader();
+//        }
+//    };
 
     // MedisStore에 새로 등록된 파일들에 대한 정보를 받아오는 함수
     private void refreshLoader() {
@@ -181,7 +197,9 @@ public class MainActivity extends AppCompatActivity {
                 MediaScannerConnection
                         .scanFile(
                                 getApplicationContext(),
-                                new String[]{getRealPathFromURI(getApplicationContext(), MediaStore.Audio.Media.EXTERNAL_CONTENT_URI)},
+                                new String[]{
+                                        getRealPathFromURI(getApplicationContext(), MediaStore.Audio.Media.EXTERNAL_CONTENT_URI),
+                                },
                                 null,
                                 new MediaScannerConnection.OnScanCompletedListener() {
                                     public void onScanCompleted(String path, Uri uri) {
@@ -206,6 +224,8 @@ public class MainActivity extends AppCompatActivity {
 
     // MediaStore로부터 오디오 파일들에 대한 정보 획득
     private void getAudioListFromMediaDatabase() {
+        musicDataArrayList.clear();
+
         LoaderManager.getInstance(this).initLoader(LOADER_ID, null, new LoaderManager.LoaderCallbacks<Cursor>() {
             @Override
             public Loader<Cursor> onCreateLoader(int id, Bundle args) {

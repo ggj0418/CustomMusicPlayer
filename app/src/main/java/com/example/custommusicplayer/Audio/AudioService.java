@@ -10,10 +10,6 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.provider.MediaStore;
-import android.text.format.DateFormat;
-import android.widget.ProgressBar;
-import android.widget.SeekBar;
-import android.widget.TextView;
 
 import com.example.custommusicplayer.DAO.BroadCastActions;
 import com.example.custommusicplayer.DAO.CommandActions;
@@ -21,7 +17,6 @@ import com.example.custommusicplayer.DAO.MusicData;
 import com.example.custommusicplayer.Notification.NotificationPlayer;
 
 import java.util.ArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AudioService extends Service {
     private final IBinder mBinder = new AudioServiceBinder();
@@ -159,9 +154,9 @@ public class AudioService extends Service {
             mCurrentPosition = 0; // 처음 포지션으로 이동.
         }
         play(mCurrentPosition);
-        // 노래가 바뀌었을 때, PlayMusicActivity의 UI를 업데이트하기 위한 코드입니다
-        sendBroadcast(new Intent(BroadCastActions.PLAY_STATE_CHANGED));
         updateNotificationPlayer();
+        // 노래가 바뀌었을 때, PlayMusicActivity의 UI를 업데이트하기 위한 코드입니다
+        sendBroadcast(new Intent(BroadCastActions.CHANGE_MUSIC));
     }
 
     public void rewind() {
@@ -171,9 +166,9 @@ public class AudioService extends Service {
             mCurrentPosition = mAudioIds.size() - 1; // 마지막 포지션으로 이동.
         }
         play(mCurrentPosition);
-        // 노래가 바뀌었을 때, PlayMusicActivity의 UI를 업데이트하기 위한 코드입니다
-        sendBroadcast(new Intent(BroadCastActions.PLAY_STATE_CHANGED));
         updateNotificationPlayer();
+        // 노래가 바뀌었을 때, PlayMusicActivity의 UI를 업데이트하기 위한 코드입니다
+        sendBroadcast(new Intent(BroadCastActions.CHANGE_MUSIC));
     }
 
     private void updateNotificationPlayer() {
@@ -225,7 +220,6 @@ public class AudioService extends Service {
                 isPrepared = false;
                 forward();
                 updateNotificationPlayer();
-                sendBroadcast(new Intent(BroadCastActions.PLAY_STATE_CHANGED));
             }
         });
         // MediaPlayer의 준비가 완료되면 주어진 노래를 실행시키는 코드입니다.
